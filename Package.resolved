@@ -1,13 +1,13 @@
 {
-  "originHash" : "9cd42eea7328f20d03c56ab59e2a8e38fac4410cc24e55c1c0a40398bb3ae680",
+  "originHash" : "1ad2721ba31213dab417f893a013651c3060f7d3890f5ee075e37ccb156902c3",
   "pins" : [
     {
       "identity" : "loopalgorithm",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tidepool-org/LoopAlgorithm.git",
       "state" : {
-        "branch" : "main",
-        "revision" : "29c7b52756e8b7c39a69475188f34f557094567f"
+        "branch" : "mjc/has-gradual-transitions",
+        "revision" : "8b94e44bfa63a86b36cbbe2725b0543d60be68a1"
       }
     }
   ],
