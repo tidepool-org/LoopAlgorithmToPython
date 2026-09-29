@@ -144,6 +144,64 @@ public func getGlucoseEffectVelocity(jsonData: UnsafePointer<Int8>?) -> UnsafeMu
     }
 }
 
+struct PredictionEffectPoint: Encodable {
+    let date: Date
+    let value: Double
+
+    init(_ effect: GlucoseEffect) {
+        self.date = effect.startDate
+        self.value = effect.quantity.doubleValue(for: HKUnit(from: "mg/dL"))
+    }
+}
+
+struct PredictionEffectsResponse: Encodable {
+    let insulin: [PredictionEffectPoint]
+    let carbs: [PredictionEffectPoint]
+    let momentum: [PredictionEffectPoint]
+    let retrospectiveCorrection: [PredictionEffectPoint]
+}
+
+@_cdecl("getPredictionEffects") // Use @_cdecl to expose the function with a C-compatible name
+public func getPredictionEffects(jsonData: UnsafePointer<Int8>?) -> UnsafePointer<CChar> {
+    let data = getDataFromJson(jsonData: jsonData)
+
+    do {
+        // Decode JSON data
+        let input = try getDecoder().decode(LoopPredictionInput.self, from: data)
+
+        let prediction = LoopAlgorithm.generatePrediction(
+            start: input.glucoseHistory.last?.startDate ?? Date(),
+            glucoseHistory: input.glucoseHistory,
+            doses: input.doses,
+            carbEntries: input.carbEntries,
+            basal: input.basal,
+            sensitivity: input.sensitivity,
+            carbRatio: input.carbRatio,
+            algorithmEffectsOptions: .all, // Here we can adjust which predictive factor to output
+            useIntegralRetrospectiveCorrection: input.useIntegralRetrospectiveCorrection
+        )
+
+        let response = PredictionEffectsResponse(
+            insulin: prediction.effects.insulin.map(PredictionEffectPoint.init),
+            carbs: prediction.effects.carbs.map(PredictionEffectPoint.init),
+            momentum: prediction.effects.momentum.map(PredictionEffectPoint.init),
+            retrospectiveCorrection: prediction.effects.retrospectiveCorrection.map(PredictionEffectPoint.init)
+        )
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let jsonData = try encoder.encode(response)
+
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            fatalError("Error encoding prediction effects as UTF-8 string")
+        }
+        let cString = strdup(jsonString)!
+        return UnsafePointer<CChar>(cString)
+    } catch {
+        fatalError("Error reading or decoding JSON file: \(error)")
+    }
+}
+
 @_cdecl("getGlucoseEffectVelocityDates")
 public func getGlucoseEffectVelocityDates(jsonData: UnsafePointer<Int8>?) -> UnsafePointer<CChar> {
     let data = getDataFromJson(jsonData: jsonData)
