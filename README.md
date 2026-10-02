@@ -95,6 +95,18 @@ Fetches the dates associated with the glucose effect velocity.
 
 -------------------------
 
+### Get Prediction Effects
+
+`get_prediction_effects(json_file)`
+
+Runs the same prediction as `generate_prediction`, but returns the intermediate insulin, carb, momentum and retrospective correction effect series instead of the combined glucose prediction.
+
+- **Parameters**: 
+  - `json_file`: The JSON data input. See python tests and test files for example inputs.
+- **Returns**: A dict with keys `insulin`, `carbs`, `momentum`, `retrospectiveCorrection`, each a list of `{"date": ..., "value": ...}` points (values in mg/dL).
+
+-------------------------
+
 ### Get Glucose Velocity Values and Dates
 
 `get_glucose_velocity_values_and_dates(json_file)`
@@ -187,6 +199,10 @@ Fetches the dynamic carbohydrates on board based on the provided JSON input.
 The file `python_api/libLoopAlgorithmToPython.dylib` contains the dynamic library that is containing the C-embedded Swift functions. 
 
 After making changes in the Swift code, rebuild the dynamic library by running `chmod +x build.sh` followed by `./build.sh`.
+
+### Rollback
+
+A rebuilt `.dylib` crosses the package boundary into the core algorithm bridge, so a regression here can be hard to localize. If a rebuilt `.dylib` misbehaves, restore the previous known-good binary and `api.py` from git (`git checkout <previous-commit> -- loop_to_python_api/libLoopAlgorithmToPython.dylib loop_to_python_api/api.py`) rather than attempting a forward fix under time pressure.
 
 
 

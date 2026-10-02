@@ -7,6 +7,7 @@ from loop_to_python_api.api import (
     get_glucose_effect_velocity,
     get_glucose_effect_velocity_dates,
     get_glucose_velocity_values_and_dates,
+    get_prediction_effects,
     get_active_carbs,
     get_active_insulin,
     percent_absorption_at_percent_time,
@@ -80,6 +81,22 @@ def test_get_glucose_effect_velocity_values_and_dates():
     assert isinstance(dates, list), "The prediction dates should be a list."
     assert all(isinstance(value, (int, float)) for value in values), "All prediction values should be integers or floats."
     assert all(isinstance(date, str) for date in dates), "All prediction dates should be strings."
+
+
+def test_get_prediction_effects():
+    prediction_input = get_generate_prediction_input()
+    effects = get_prediction_effects(prediction_input)
+
+    assert isinstance(effects, dict)
+    for key in ("insulin", "carbs", "momentum", "retrospectiveCorrection"):
+        assert key in effects, f"Missing '{key}' series in prediction effects"
+        series = effects[key]
+        assert isinstance(series, list)
+        for point in series:
+            assert isinstance(point, dict)
+            assert "date" in point
+            assert "value" in point
+            assert isinstance(point["value"], (int, float))
 
 
 def test_get_active_carbs():

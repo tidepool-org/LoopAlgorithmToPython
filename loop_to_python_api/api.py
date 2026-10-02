@@ -5,6 +5,7 @@ for swift functions, found in Sources/LoopAlgorithmToPython/LoopAlgorithmToPytho
 from loop_to_python_api.helpers import get_bytes_from_json
 
 import ctypes
+import json
 import os
 
 
@@ -88,6 +89,16 @@ def get_glucose_velocity_values_and_dates(json_file):
     dates = get_glucose_effect_velocity_dates(json_file)
     values = get_glucose_effect_velocity(json_file, len(dates))
     return values, dates
+
+
+def get_prediction_effects(json_file):
+    json_bytes = get_bytes_from_json(json_file)
+
+    swift_lib.getPredictionEffects.argtypes = [ctypes.c_char_p]
+    swift_lib.getPredictionEffects.restype = ctypes.c_char_p
+
+    result = swift_lib.getPredictionEffects(json_bytes).decode('utf-8')
+    return json.loads(result)
 
 
 def get_active_carbs(json_file):
